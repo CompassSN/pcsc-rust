@@ -1590,9 +1590,7 @@ impl Card {
         send_buffer: &[u8],
         receive_buffer: &'buf mut [u8],
     ) -> Result<&'buf [u8], (Error, usize)> {
-        let active_protocol = self.active_protocol.expect(
-            "pcsc::Card::transmit() does not work with direct connections"
-        );
+        let active_protocol = self.active_protocol.unwrap_or(Protocol::RAW);
         let send_pci = get_protocol_pci(active_protocol);
         let recv_pci = null_mut();
         assert!(receive_buffer.len() <= std::u32::MAX as usize);
