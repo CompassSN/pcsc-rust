@@ -1,3 +1,45 @@
+# pcsc 2.8.2 (2023-12-23)
+
+* Make `pcsc::ffi` public again; accidentally regressed in 2.8.1.
+
+  Contributed by Ignacio Casal Quinteiro.
+
+# pcsc 2.8.1 (2023-12-16)
+
+* Fix possible panics in `list_readers_owned` and `get_attribute_owned` functions,
+  and handling of null buffers in `list_readers` and `get_attribute`.
+
+  Reported by @ n-eq in
+  [issue #9](https://github.com/bluetech/pcsc-rust/issues/44).
+
+# pcsc 2.8.0 (2022-12-29)
+
+* The `pcsc-sys` crate is now reexported from the `pcsc` crate as
+  `pcsc::ffi`.
+
+  Contributed by Basix.
+
+* Added `Card::transmit2()`, which is like `Card::transmit()`, but also
+  returns the required receive buffer size on `Error::InsufficientBuffer`
+  errors.
+
+  Make sure to heed the note on the function's documentation if you intend
+  to use it!
+
+  Contributed by Nicolas Dusart.
+
+* Added `ReaderState::current_state() -> State` getter. This returns the
+  last current state that was set using `sync_current_state()`.
+
+  Note that for observing the current state as reported by
+  `get_status_change()`, you want `event_state()`, not `current_state()`.
+
+  Contributed by Ilya Averyanov.
+
+* `ReaderState` is now `Send` and `Sync`.
+
+* Bumped the minimum supported rust version (MSRV) 1.20 -> 1.38.
+
 # pcsc 2.7.0 (2022-02-15)
 
 * Added `Card::transaction2()`, which is like `Card::transaction()`, but

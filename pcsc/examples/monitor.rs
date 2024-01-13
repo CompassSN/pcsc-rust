@@ -1,7 +1,4 @@
 // Example of how to monitor card & card reader state changes.
-
-extern crate pcsc;
-
 use pcsc::*;
 
 fn main() {
@@ -39,7 +36,8 @@ fn main() {
         }
 
         // Wait until the state changes.
-        ctx.get_status_change(None, &mut reader_states).expect("failed to get status change");
+        ctx.get_status_change(None, &mut reader_states)
+            .expect("failed to get status change");
 
         // Print current state.
         println!();
