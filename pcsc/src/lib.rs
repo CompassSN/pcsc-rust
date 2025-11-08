@@ -124,6 +124,8 @@ const DUMMY_DWORD: DWORD = 0xdead_beef;
 
 bitflags! {
     /// A mask of the state a card reader.
+    // Derives to keep backward compat with bitflags 1.
+    #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy)]
     pub struct State: DWORD {
         const UNAWARE = ffi::SCARD_STATE_UNAWARE;
         const IGNORE = ffi::SCARD_STATE_IGNORE;
@@ -140,6 +142,14 @@ bitflags! {
     }
 }
 
+// Backward compat with bitflags 1.
+impl State {
+    #[deprecated = "use the safe `from_bits_retain` method instead"]
+    pub unsafe fn from_bits_unchecked(bits: DWORD) -> Self {
+        Self::from_bits_retain(bits)
+    }
+}
+
 bitflags! {
     /// A mask of the status of a card in a card reader.
     ///
@@ -148,6 +158,8 @@ bitflags! {
     /// On Windows, Status always has exactly one bit set, and the bit values do
     /// not correspond to underlying PC/SC constants. This allows Status to be
     /// used in the same way across all platforms.
+    // Derives to keep backward compat with bitflags 1.
+    #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy)]
     pub struct Status: DWORD {
         const UNKNOWN = {
             #[cfg(not(target_os = "windows"))] { ffi::SCARD_UNKNOWN }
@@ -197,6 +209,12 @@ impl Status {
         #[cfg(not(target_os = "windows"))]
         Status::from_bits_truncate(raw_status)
     }
+
+    // Backward compat with bitflags 1.
+    #[deprecated = "use the safe `from_bits_retain` method instead"]
+    pub unsafe fn from_bits_unchecked(bits: DWORD) -> Self {
+        Self::from_bits_retain(bits)
+    }
 }
 
 /// How a reader connection is shared.
@@ -239,12 +257,22 @@ impl Protocol {
 
 bitflags! {
     /// A mask of possible communication protocols.
+    // Derives to keep backward compat with bitflags 1.
+    #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy)]
     pub struct Protocols: DWORD {
         const UNDEFINED = ffi::SCARD_PROTOCOL_UNDEFINED;
         const T0 = ffi::SCARD_PROTOCOL_T0;
         const T1 = ffi::SCARD_PROTOCOL_T1;
         const RAW = ffi::SCARD_PROTOCOL_RAW;
         const ANY = ffi::SCARD_PROTOCOL_ANY;
+    }
+}
+
+// Backward compat with bitflags 1.
+impl Protocols {
+    #[deprecated = "use the safe `from_bits_retain` method instead"]
+    pub unsafe fn from_bits_unchecked(bits: DWORD) -> Self {
+        Self::from_bits_retain(bits)
     }
 }
 
@@ -583,7 +611,7 @@ pub fn PNP_NOTIFICATION() -> &'static CStr {
 /// to this function.
 ///
 /// This function wraps the `SCARD_CTL_CODE` macro.
-pub fn ctl_code(code: DWORD) -> DWORD {
+pub const fn ctl_code(code: DWORD) -> DWORD {
     ffi::SCARD_CTL_CODE(code)
 }
 
@@ -1683,6 +1711,21 @@ impl<'tx> Transaction<'tx> {
 
             Ok(())
         }
+    }
+
+    /// Reconnect to the card.
+    ///
+    /// This function wraps `SCardReconnect` ([pcsclite][1], [MSDN][2]).
+    ///
+    /// [1]: https://pcsclite.apdu.fr/api/group__API.html#gad5d4393ca8c470112ad9468c44ed8940
+    /// [2]: https://msdn.microsoft.com/en-us/library/aa379797.aspx
+    pub fn reconnect(
+        &mut self,
+        share_mode: ShareMode,
+        preferred_protocols: Protocols,
+        initialization: Disposition,
+    ) -> Result<(), Error> {
+        self.card.reconnect(share_mode, preferred_protocols, initialization)
     }
 }
 
